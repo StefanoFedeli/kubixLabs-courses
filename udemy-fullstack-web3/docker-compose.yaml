@@ -1,0 +1,37 @@
+version: '3.1'
+services:
+  metamask_db:
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: metamask_login
+    volumes:
+      - ./database/pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  metamask_api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgres://root:root@metamask_db:5432/metamask_login
+      JWT_SECRET: secret
+    ports:
+      - "3000:3000"
+    depends_on:
+      - metamask_db
+  metamask_web:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      VITE_APP_API: http://localhost:3000/api
+    ports:
+      - '8080:80'
+    depends_on:
+      - metamask_api
+
+    

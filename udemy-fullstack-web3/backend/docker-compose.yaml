@@ -1,0 +1,24 @@
+version: '3.1'
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: metamask_login
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgres://root:root@db:5432/metamask_login
+      JWT_SECRET: secret
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
