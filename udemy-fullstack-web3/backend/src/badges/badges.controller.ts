@@ -22,6 +22,7 @@ export class BadgesController {
     if (this.request.user.authType === 'metamask') {
       const accountId = this.request.user.accountId;
       console.log('ACCOUNT ID FROM JWT', accountId);
+      return this.badgesService.getNFTBadges(accountId);
     }
     return this.badgesService.getBadges(userId);
   }
@@ -37,6 +38,11 @@ export class BadgesController {
   @Post("all")
   claimBadgeAll() {
     const userId = this.request.user.userId;
+    if (this.request.user.authType === 'metamask') {
+      const accountId = this.request.user.accountId;
+      console.log('ACCOUNT ID FROM JWT', accountId);
+      return this.badgesService.claimNFT(accountId);
+    }
     return this.badgesService.claimAllBadges(userId);
   }
 

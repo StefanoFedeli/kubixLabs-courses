@@ -4,6 +4,7 @@ import {useAppStore} from "@/store/app";
 import router from "@/router";
 import api from "@/api";
 import {ref} from "vue";
+import detectEthereumProvider from "@metamask/detect-provider";
 
 const appStore = useAppStore()
 
@@ -14,6 +15,14 @@ interface Badge {
   photo: string
 }
 
+const metamask = ref(false)
+detectEthereumProvider({silent: true}).then(
+  (provider) => {
+    if (provider) {
+      metamask.value = true
+    }
+  }
+)
 const badges = ref([] as Badge[])
 
 // loading
@@ -23,6 +32,20 @@ const claimBadges = async () => {
   try {
     const {data} = await api.claimAllBadges()
     console.log("CLAIMED BADGES", data)
+    await window.ethereum.request({
+        method: 'eth_sendTransaction',
+        // The following sends an EIP-1559 transaction. Legacy transactions are also supported.
+        params: [
+          {
+            from: data.from, // The user's active address.
+            to: data.to, // Required except during contract publications.
+            value: data.value, // Only required to send ether to the recipient from the initiating external account.
+            data: data.data, // Customizable by the user during MetaMask confirmation.
+          },
+        ],
+      })
+      .then((txHash) => console.log(txHash))
+      .catch((error) => console.error(error));
     await getBadges()
   } catch (e) {
     console.log(e)
